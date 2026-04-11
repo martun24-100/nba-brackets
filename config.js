@@ -6,34 +6,35 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// 2026 NBA Playoff seedings (update after play-in if needed via admin)
+// Default seeds — all TBD. Set the real teams via admin.html.
+// You never need to edit this file manually.
 const INITIAL_SEEDS = {
   east: [
-    { seed: 1, team: 'Cleveland Cavaliers', abbr: 'CLE', logo: 'https://cdn.nba.com/logos/nba/1610612739/global/L/logo.svg' },
-    { seed: 2, team: 'Boston Celtics', abbr: 'BOS', logo: 'https://cdn.nba.com/logos/nba/1610612738/global/L/logo.svg' },
-    { seed: 3, team: 'New York Knicks', abbr: 'NYK', logo: 'https://cdn.nba.com/logos/nba/1610612752/global/L/logo.svg' },
-    { seed: 4, team: 'Milwaukee Bucks', abbr: 'MIL', logo: 'https://cdn.nba.com/logos/nba/1610612749/global/L/logo.svg' },
-    { seed: 5, team: 'Indiana Pacers', abbr: 'IND', logo: 'https://cdn.nba.com/logos/nba/1610612754/global/L/logo.svg' },
-    { seed: 6, team: 'Miami Heat', abbr: 'MIA', logo: 'https://cdn.nba.com/logos/nba/1610612748/global/L/logo.svg' },
-    { seed: 7, team: 'TBD (Play-In 7)', abbr: 'E7', logo: '' },
-    { seed: 8, team: 'TBD (Play-In 8)', abbr: 'E8', logo: '' },
+    { seed: 1, team: 'TBD', abbr: 'E1' },
+    { seed: 2, team: 'TBD', abbr: 'E2' },
+    { seed: 3, team: 'TBD', abbr: 'E3' },
+    { seed: 4, team: 'TBD', abbr: 'E4' },
+    { seed: 5, team: 'TBD', abbr: 'E5' },
+    { seed: 6, team: 'TBD', abbr: 'E6' },
+    { seed: 7, team: 'TBD (Play-In)', abbr: 'E7' },
+    { seed: 8, team: 'TBD (Play-In)', abbr: 'E8' },
   ],
   west: [
-    { seed: 1, team: 'Oklahoma City Thunder', abbr: 'OKC', logo: 'https://cdn.nba.com/logos/nba/1610612760/global/L/logo.svg' },
-    { seed: 2, team: 'Houston Rockets', abbr: 'HOU', logo: 'https://cdn.nba.com/logos/nba/1610612745/global/L/logo.svg' },
-    { seed: 3, team: 'Los Angeles Lakers', abbr: 'LAL', logo: 'https://cdn.nba.com/logos/nba/1610612747/global/L/logo.svg' },
-    { seed: 4, team: 'Denver Nuggets', abbr: 'DEN', logo: 'https://cdn.nba.com/logos/nba/1610612743/global/L/logo.svg' },
-    { seed: 5, team: 'Los Angeles Clippers', abbr: 'LAC', logo: 'https://cdn.nba.com/logos/nba/1610612746/global/L/logo.svg' },
-    { seed: 6, team: 'Minnesota Timberwolves', abbr: 'MIN', logo: 'https://cdn.nba.com/logos/nba/1610612750/global/L/logo.svg' },
-    { seed: 7, team: 'TBD (Play-In 7)', abbr: 'W7', logo: '' },
-    { seed: 8, team: 'TBD (Play-In 8)', abbr: 'W8', logo: '' },
+    { seed: 1, team: 'TBD', abbr: 'W1' },
+    { seed: 2, team: 'TBD', abbr: 'W2' },
+    { seed: 3, team: 'TBD', abbr: 'W3' },
+    { seed: 4, team: 'TBD', abbr: 'W4' },
+    { seed: 5, team: 'TBD', abbr: 'W5' },
+    { seed: 6, team: 'TBD', abbr: 'W6' },
+    { seed: 7, team: 'TBD (Play-In)', abbr: 'W7' },
+    { seed: 8, team: 'TBD (Play-In)', abbr: 'W8' },
   ]
 };
 
-// Matchups per round
+// Matchups per round (index positions — do not change)
 const MATCHUPS = {
   east: {
-    r1: [[0,7],[1,6],[2,5],[3,4]],   // 1v8, 2v7, 3v6, 4v5
+    r1: [[0,7],[1,6],[2,5],[3,4]],
     r2: [['e_r1_w0','e_r1_w1'],['e_r1_w2','e_r1_w3']],
     r3: [['e_r2_w0','e_r2_w1']],
   },
@@ -45,7 +46,7 @@ const MATCHUPS = {
   finals: [['e_r3_w0','w_r3_w0']]
 };
 
-const DEADLINE = new Date('2026-04-18T00:00:00-04:00'); // April 18 midnight ET
+const DEADLINE = new Date('2026-04-18T00:00:00-04:00');
 
 function isDeadlinePassed() {
   return new Date() >= DEADLINE;
@@ -57,4 +58,23 @@ function formatDeadline() {
     day: 'numeric', hour: '2-digit', minute: '2-digit',
     timeZoneName: 'short', timeZone: 'America/New_York'
   });
+}
+
+// Load seeds from Supabase settings (set via admin panel)
+// Returns merged seed list overriding defaults with saved values
+async function loadSeedsFromDB() {
+  const seeds = JSON.parse(JSON.stringify(INITIAL_SEEDS));
+  try {
+    const { data } = await db.from('settings').select('*');
+    if (!data) return seeds;
+    data.forEach(row => {
+      const match = row.key.match(/^(east|west)_seed_(\d)$/);
+      if (match && row.value) {
+        const conf = match[1];
+        const idx = parseInt(match[2]) - 1; // seed 1 = index 0
+        if (seeds[conf][idx]) seeds[conf][idx].team = row.value;
+      }
+    });
+  } catch(e) { /* use defaults */ }
+  return seeds;
 }
