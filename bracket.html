@@ -506,6 +506,9 @@ function autoFillLoser(sk) {
 async function loadData() {
   isLocked = isDeadlinePassed();
 
+  // Load seeds from DB (set by admin)
+  seeds = await loadSeedsFromDB();
+
   // Load existing bracket
   const { data: bracket } = await db.from('brackets').select('*').eq('user_id', USER_ID).single();
   if (bracket) {
