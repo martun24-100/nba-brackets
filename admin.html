@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — NBA Brackets 2026</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #F8F8F6; min-height: 100vh; }
+
+    header {
+      background: #253B73;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { color: white; font-size: 1.1rem; font-weight: 700; }
+    header a { color: rgba(255,255,255,0.8); font-size: 0.9rem; text-decoration: none; }
+
+    main { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+
+    .admin-warning {
+      background: #B52532;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      font-weight: 700;
+    }
+
+    section {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(37,59,115,0.08);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    section h2 {
+      color: #253B73;
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #eee;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .form-row label { width: 160px; font-weight: 600; color: #333; font-size: 0.9rem; flex-shrink: 0; }
+
+    input[type="text"], select.admin-select {
+      padding: 8px 12px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-family: Arial, sans-serif;
+      font-size: 0.9rem;
+      flex: 1;
+      min-width: 140px;
+    }
+
+    button.admin-btn {
+      background: #253B73;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 9px 20px;
+      font-family: Arial, sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button.admin-btn:hover { background: #1a2d5a; }
+    button.admin-btn.red { background: #B52532; }
+    button.admin-btn.red:hover { background: #9a1f2b; }
+
+    .status { color: #253B73; font-size: 0.88rem; margin-top: 8px; min-height: 18px; }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .result-card {
+      border: 2px solid #eee;
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .result-card h3 { font-size: 0.88rem; color: #253B73; margin-bottom: 10px; font-weight: 700; }
+
+    .result-card select, .result-card input {
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 7px 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+      font-size: 0.85rem;
+    }
+
+    .result-card button { width: 100%; }
+
+    .fetch-status {
+      background: #e8f4e8;
+      border: 1px solid #b8d8b8;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      color: #2d6a2d;
+      margin-top: 10px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⚙️ Admin Panel — NBA Brackets 2026</h1>
+  <a href="index.html">← Back to site</a>
+</header>
+
+<main>
+  <div class="admin-warning">⚠️ Admin only — do not share this page URL with players.</div>
+
+  <!-- UPDATE PLAY-IN RESULTS / SEEDS -->
+  <section>
+    <h2>🏀 Update Play-In Teams (Seeds 7 & 8)</h2>
+    <p style="font-size:0.88rem;color:#666;margin-bottom:14px;">After the play-in tournament, update who earned the 7 and 8 seeds.</p>
+
+    <div class="form-row">
+      <label>East Seed 7:</label>
+      <input type="text" id="east7" placeholder="Team name" />
+    </div>
+    <div class="form-row">
+      <label>East Seed 8:</label>
+      <input type="text" id="east8" placeholder="Team name" />
+    </div>
+    <div class="form-row">
+      <label>West Seed 7:</label>
+      <input type="text" id="west7" placeholder="Team name" />
+    </div>
+    <div class="form-row">
+      <label>West Seed 8:</label>
+      <input type="text" id="west8" placeholder="Team name" />
+    </div>
+    <button class="admin-btn" onclick="updateSeeds()">Update Seeds in DB</button>
+    <div class="status" id="seeds-status"></div>
+  </section>
+
+  <!-- LOCK ALL BRACKETS -->
+  <section>
+    <h2>🔒 Lock / Unlock Brackets</h2>
+    <p style="font-size:0.88rem;color:#666;margin-bottom:14px;">Lock all brackets when the playoffs start (April 18). This prevents any further edits.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <button class="admin-btn red" onclick="lockAll()">🔒 Lock All Brackets</button>
+      <button class="admin-btn" onclick="unlockAll()">🔓 Unlock All Brackets</button>
+    </div>
+    <div class="status" id="lock-status"></div>
+  </section>
+
+  <!-- ENTER SERIES RESULTS -->
+  <section>
+    <h2>📊 Enter Series Results</h2>
+    <p style="font-size:0.88rem;color:#666;margin-bottom:16px;">Enter the winner and score for each completed series. This updates the leaderboard and bracket highlighting automatically.</p>
+
+    <div class="results-grid" id="results-grid">
+      <!-- Populated by JS -->
+    </div>
+  </section>
+
+  <!-- RECALCULATE POINTS -->
+  <section>
+    <h2>🔄 Recalculate All Points</h2>
+    <p style="font-size:0.88rem;color:#666;margin-bottom:14px;">After entering results, click this to recompute everyone's total points in the DB.</p>
+    <button class="admin-btn" onclick="recalcPoints()">Recalculate Points</button>
+    <div class="status" id="recalc-status"></div>
+  </section>
+
+</main>
+
+<script>
+const SCORE_OPTS = ['4-0','4-1','4-2','4-3'];
+
+const ALL_SERIES = [
+  // East R1
+  { key: 'east_r1_s0', label: 'East R1: 1 vs 8', teams: ['Cleveland Cavaliers', 'TBD E8'], round: 1 },
+  { key: 'east_r1_s1', label: 'East R1: 2 vs 7', teams: ['Boston Celtics', 'TBD E7'], round: 1 },
+  { key: 'east_r1_s2', label: 'East R1: 3 vs 6', teams: ['New York Knicks', 'Miami Heat'], round: 1 },
+  { key: 'east_r1_s3', label: 'East R1: 4 vs 5', teams: ['Milwaukee Bucks', 'Indiana Pacers'], round: 1 },
+  // East R2
+  { key: 'east_r2_s0', label: 'East Semis: S1 winner vs S2 winner', teams: [], round: 2 },
+  { key: 'east_r2_s1', label: 'East Semis: S3 winner vs S4 winner', teams: [], round: 2 },
+  // East Finals
+  { key: 'east_r3_s0', label: 'East Conference Finals', teams: [], round: 3 },
+  // West R1
+  { key: 'west_r1_s0', label: 'West R1: 1 vs 8', teams: ['Oklahoma City Thunder', 'TBD W8'], round: 1 },
+  { key: 'west_r1_s1', label: 'West R1: 2 vs 7', teams: ['Houston Rockets', 'TBD W7'], round: 1 },
+  { key: 'west_r1_s2', label: 'West R1: 3 vs 6', teams: ['Los Angeles Lakers', 'Minnesota Timberwolves'], round: 1 },
+  { key: 'west_r1_s3', label: 'West R1: 4 vs 5', teams: ['Denver Nuggets', 'Los Angeles Clippers'], round: 1 },
+  // West R2
+  { key: 'west_r2_s0', label: 'West Semis: S1 winner vs S2 winner', teams: [], round: 2 },
+  { key: 'west_r2_s1', label: 'West Semis: S3 winner vs S4 winner', teams: [], round: 2 },
+  // West Finals
+  { key: 'west_r3_s0', label: 'West Conference Finals', teams: [], round: 3 },
+  // Finals
+  { key: 'finals_s0', label: '🏆 NBA Finals', teams: [], round: 4 },
+];
+
+let existingResults = {};
+
+async function loadResults() {
+  const { data } = await db.from('results').select('*');
+  (data || []).forEach(r => { existingResults[r.series_key] = r; });
+  buildResultsGrid();
+}
+
+function buildResultsGrid() {
+  const grid = document.getElementById('results-grid');
+  grid.innerHTML = '';
+
+  ALL_SERIES.forEach(s => {
+    const existing = existingResults[s.key];
+    const card = document.createElement('div');
+    card.className = 'result-card';
+
+    card.innerHTML = `
+      <h3>${s.label}</h3>
+      <input type="text" id="winner-${s.key}" placeholder="Winning team" value="${existing?.winner || ''}"/>
+      <select id="score-${s.key}">
+        <option value="">— Score —</option>
+        ${SCORE_OPTS.map(o => `<option value="${o}" ${existing?.score === o ? 'selected' : ''}>${o}</option>`).join('')}
+      </select>
+      <button class="admin-btn" onclick="saveResult('${s.key}')">Save</button>
+      <div class="status" id="status-${s.key}"></div>
+    `;
+
+    grid.appendChild(card);
+  });
+}
+
+async function saveResult(key) {
+  const winner = document.getElementById(`winner-${key}`).value.trim();
+  const score = document.getElementById(`score-${key}`).value;
+  const statusEl = document.getElementById(`status-${key}`);
+
+  if (!winner || !score) { statusEl.textContent = 'Fill in both fields.'; return; }
+
+  const existing = existingResults[key];
+  let err;
+
+  if (existing) {
+    ({ error: err } = await db.from('results').update({ winner, score, updated_at: new Date().toISOString() }).eq('series_key', key));
+  } else {
+    ({ error: err } = await db.from('results').insert({ series_key: key, winner, score, round: ALL_SERIES.find(s => s.key === key).round }));
+  }
+
+  if (err) { statusEl.textContent = '❌ Error: ' + err.message; }
+  else {
+    existingResults[key] = { winner, score };
+    statusEl.textContent = '✅ Saved!';
+    setTimeout(() => { statusEl.textContent = ''; }, 3000);
+  }
+}
+
+async function lockAll() {
+  const { error } = await db.from('brackets').update({ locked: true }).neq('id', '00000000-0000-0000-0000-000000000000');
+  document.getElementById('lock-status').textContent = error ? '❌ Error: ' + error.message : '✅ All brackets locked.';
+}
+
+async function unlockAll() {
+  const { error } = await db.from('brackets').update({ locked: false }).neq('id', '00000000-0000-0000-0000-000000000000');
+  document.getElementById('lock-status').textContent = error ? '❌ Error: ' + error.message : '✅ All brackets unlocked.';
+}
+
+async function updateSeeds() {
+  // Store updated seeds in settings table for the app to read
+  const e7 = document.getElementById('east7').value.trim();
+  const e8 = document.getElementById('east8').value.trim();
+  const w7 = document.getElementById('west7').value.trim();
+  const w8 = document.getElementById('west8').value.trim();
+
+  const updates = [
+    { key: 'east_seed7', value: e7 },
+    { key: 'east_seed8', value: e8 },
+    { key: 'west_seed7', value: w7 },
+    { key: 'west_seed8', value: w8 },
+  ].filter(u => u.value);
+
+  for (const u of updates) {
+    await db.from('settings').upsert({ key: u.key, value: u.value });
+  }
+
+  document.getElementById('seeds-status').textContent = '✅ Seeds updated.';
+}
+
+async function recalcPoints() {
+  const statusEl = document.getElementById('recalc-status');
+  statusEl.textContent = 'Recalculating...';
+
+  const [{ data: users }, { data: brackets }, { data: results }] = await Promise.all([
+    db.from('users').select('*'),
+    db.from('brackets').select('*'),
+    db.from('results').select('*'),
+  ]);
+
+  const resultsMap = {};
+  (results || []).forEach(r => { resultsMap[r.series_key] = r; });
+
+  const SERIES_KEYS = ALL_SERIES.map(s => ({ key: s.key, round: s.round }));
+
+  function pts(pick, result) {
+    if (!pick?.winner || !result?.winner) return 0;
+    if (pick.winner !== result.winner) return 0;
+    if (pick.score === result.score) return 3;
+    return 2;
+  }
+
+  for (const b of (brackets || [])) {
+    let total = 0;
+    SERIES_KEYS.forEach(({ key, round }) => {
+      total += pts(b.picks[key], resultsMap[key]);
+    });
+    await db.from('brackets').update({ total_points: total }).eq('id', b.id);
+  }
+
+  statusEl.textContent = `✅ Done! Points recalculated for ${(brackets||[]).length} brackets.`;
+}
+
+loadResults();
+</script>
+</body>
+</html>

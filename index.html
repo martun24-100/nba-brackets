@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NBA Playoff Brackets 2026</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #F8F8F6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #253B73;
+      padding: 24px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    header img { height: 48px; }
+
+    header h1 {
+      color: #F8F8F6;
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    header span {
+      color: #B52532;
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+      gap: 32px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(37,59,115,0.12);
+      padding: 40px 48px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .trophy {
+      font-size: 4rem;
+      margin-bottom: 8px;
+    }
+
+    .card h2 {
+      color: #253B73;
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .deadline-badge {
+      background: #253B73;
+      color: #F8F8F6;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      margin: 12px 0 24px;
+      display: inline-block;
+    }
+
+    .deadline-badge span {
+      color: #B52532;
+      font-weight: 700;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-family: Arial, sans-serif;
+      font-size: 1rem;
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    input[type="text"]:focus { border-color: #253B73; }
+
+    button.enter-btn {
+      width: 100%;
+      padding: 14px;
+      background: #B52532;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: Arial, sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button.enter-btn:hover { background: #9a1f2b; }
+    button.enter-btn:active { transform: scale(0.98); }
+
+    .error {
+      color: #B52532;
+      font-size: 0.9rem;
+      margin-top: 10px;
+      min-height: 20px;
+    }
+
+    .info-boxes {
+      display: flex;
+      gap: 16px;
+      max-width: 700px;
+      width: 100%;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .info-box {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(37,59,115,0.08);
+      padding: 20px 24px;
+      flex: 1;
+      min-width: 200px;
+      border-top: 4px solid #253B73;
+    }
+
+    .info-box h3 {
+      color: #253B73;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .info-box p {
+      color: #444;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .info-box .pts { color: #B52532; font-weight: 700; }
+
+    footer {
+      background: #253B73;
+      color: rgba(248,248,246,0.6);
+      text-align: center;
+      padding: 14px;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🏀 NBA Playoffs <span>2026</span> — Bracket Challenge</h1>
+</header>
+
+<div class="hero">
+  <div class="card">
+    <div class="trophy">🏆</div>
+    <h2>Enter Your Bracket</h2>
+    <div class="deadline-badge">
+      Bracket closes: <span id="deadline-text">Loading...</span>
+    </div>
+
+    <input type="text" id="username-input" placeholder="Your name / username" maxlength="30" />
+    <button class="enter-btn" onclick="enterApp()">ENTER →</button>
+    <div class="error" id="error-msg"></div>
+  </div>
+
+  <div class="info-boxes">
+    <div class="info-box">
+      <h3>📅 Schedule</h3>
+      <p>
+        Play-In Tournament: <strong>Apr 14–17</strong><br>
+        Playoffs Begin: <strong>Apr 18</strong><br>
+        Bracket closes when playoffs start.
+      </p>
+    </div>
+    <div class="info-box">
+      <h3>🎯 Scoring</h3>
+      <p>
+        Correct team advancing: <span class="pts">2 pts</span><br>
+        Correct team + series score: <span class="pts">3 pts</span><br>
+        Right team & score, wrong opponent (Rd 2+): <span class="pts">2 pts</span>
+      </p>
+    </div>
+    <div class="info-box">
+      <h3>📋 Rules</h3>
+      <p>
+        Submit before deadline. Once playoffs start, brackets are locked. View your picks and compete on the leaderboard!
+      </p>
+    </div>
+  </div>
+</div>
+
+<footer>NBA Bracket Challenge 2026 &mdash; For entertainment purposes</footer>
+
+<script>
+  document.getElementById('deadline-text').textContent = formatDeadline();
+
+  document.getElementById('username-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') enterApp();
+  });
+
+  async function enterApp() {
+    const raw = document.getElementById('username-input').value.trim();
+    const err = document.getElementById('error-msg');
+    err.textContent = '';
+
+    if (!raw) { err.textContent = 'Please enter your name.'; return; }
+    if (raw.length < 2) { err.textContent = 'Name must be at least 2 characters.'; return; }
+
+    const username = raw.toLowerCase().replace(/\s+/g, '_');
+
+    // Check user count (max 10)
+    const { data: allUsers, error: countErr } = await db.from('users').select('id, username');
+    if (countErr) { err.textContent = 'Connection error. Try again.'; return; }
+
+    const existing = allUsers.find(u => u.username === username);
+
+    if (!existing) {
+      if (allUsers.length >= 10) {
+        err.textContent = 'This bracket challenge is full (max 10 players).';
+        return;
+      }
+      // Create new user
+      const { data: newUser, error: insertErr } = await db.from('users').insert({ username }).select().single();
+      if (insertErr) { err.textContent = 'Could not create account. Try again.'; return; }
+      localStorage.setItem('nba_user_id', newUser.id);
+      localStorage.setItem('nba_username', username);
+    } else {
+      localStorage.setItem('nba_user_id', existing.id);
+      localStorage.setItem('nba_username', username);
+    }
+
+    // Check if bracket exists
+    const userId = existing ? existing.id : (await db.from('users').select('id').eq('username', username).single()).data.id;
+    const { data: bracket } = await db.from('brackets').select('id, locked').eq('user_id', userId).single();
+
+    if (bracket && (bracket.locked || isDeadlinePassed())) {
+      window.location.href = 'leaderboard.html';
+    } else {
+      window.location.href = 'bracket.html';
+    }
+  }
+</script>
+</body>
+</html>

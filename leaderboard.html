@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leaderboard — NBA Brackets 2026</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { font-family: Arial, sans-serif; background: #F8F8F6; min-height: 100vh; }
+
+    header {
+      background: #253B73;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    header h1 { color: #F8F8F6; font-size: 1.2rem; font-weight: 700; }
+    .user-tag { color: rgba(248,248,246,0.8); font-size: 0.9rem; }
+
+    .nav-links a {
+      color: #F8F8F6;
+      text-decoration: none;
+      margin-left: 20px;
+      font-size: 0.9rem;
+      opacity: 0.85;
+    }
+    .nav-links a:hover { opacity: 1; }
+
+    main { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+
+    h2 {
+      color: #253B73;
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 3px solid #B52532;
+      display: inline-block;
+    }
+
+    /* Leaderboard */
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(37,59,115,0.1);
+      margin-bottom: 40px;
+    }
+
+    .leaderboard-table thead tr {
+      background: #253B73;
+      color: white;
+    }
+
+    .leaderboard-table th, .leaderboard-table td {
+      padding: 13px 18px;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    .leaderboard-table tbody tr {
+      border-bottom: 1px solid #eee;
+      transition: background 0.15s;
+    }
+
+    .leaderboard-table tbody tr:hover { background: #f0f4ff; }
+    .leaderboard-table tbody tr.me { background: #fff8e1; }
+
+    .rank-badge {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .rank-1 { color: #c8a020; }
+    .rank-2 { color: #888; }
+    .rank-3 { color: #a0522d; }
+
+    .pts-cell { font-weight: 700; color: #B52532; font-size: 1.05rem; }
+
+    /* Compare section */
+    .compare-section { margin-bottom: 40px; }
+
+    .compare-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .compare-controls label { font-weight: 700; color: #253B73; }
+
+    select.user-select {
+      padding: 10px 14px;
+      border: 2px solid #253B73;
+      border-radius: 8px;
+      font-family: Arial, sans-serif;
+      font-size: 0.95rem;
+      background: white;
+    }
+
+    button.compare-btn {
+      background: #B52532;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-family: Arial, sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button.compare-btn:hover { background: #9a1f2b; }
+
+    .similarity-badge {
+      background: #253B73;
+      color: white;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 1rem;
+      margin-bottom: 16px;
+      display: inline-block;
+    }
+
+    .similarity-badge span { color: #B52532; font-size: 1.3rem; font-weight: 700; }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(37,59,115,0.1);
+    }
+
+    .compare-table thead tr { background: #253B73; color: white; }
+    .compare-table th, .compare-table td { padding: 11px 16px; font-size: 0.88rem; border-bottom: 1px solid #eee; }
+
+    .match { color: #155724; font-weight: 700; }
+    .mismatch { color: #721c24; }
+
+    /* View other bracket */
+    .view-section { margin-bottom: 40px; }
+
+    .bracket-viewer {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(37,59,115,0.1);
+      padding: 20px;
+    }
+
+    .series-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.9rem;
+    }
+
+    .series-row:last-child { border-bottom: none; }
+    .series-label { color: #888; font-size: 0.8rem; width: 120px; }
+    .series-pick { font-weight: 600; color: #253B73; }
+    .series-score { color: #555; font-size: 0.85rem; }
+
+    .round-divider {
+      background: #253B73;
+      color: white;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border-radius: 4px;
+      margin: 12px 0 6px;
+      display: inline-block;
+    }
+
+    .no-bracket { color: #888; font-style: italic; padding: 12px 0; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🏆 NBA Playoff Brackets 2026</h1>
+    <div class="user-tag" id="user-tag"></div>
+  </div>
+  <div class="nav-links">
+    <a href="bracket.html">📋 My Bracket</a>
+    <a href="index.html">← Home</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- LEADERBOARD -->
+  <h2>🏅 Leaderboard</h2>
+  <table class="leaderboard-table">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Player</th>
+        <th>Points</th>
+        <th>Correct Picks</th>
+      </tr>
+    </thead>
+    <tbody id="leaderboard-body">
+      <tr><td colspan="4" style="text-align:center;padding:20px;color:#888;">Loading...</td></tr>
+    </tbody>
+  </table>
+
+  <!-- COMPARE BRACKETS -->
+  <div class="compare-section">
+    <h2>🔍 Compare Brackets</h2>
+    <div class="compare-controls">
+      <label>Compare my bracket vs:</label>
+      <select class="user-select" id="compare-select">
+        <option value="">— Select a player —</option>
+      </select>
+      <button class="compare-btn" onclick="runCompare()">Compare</button>
+    </div>
+    <div id="compare-result"></div>
+  </div>
+
+  <!-- VIEW OTHER BRACKET -->
+  <div class="view-section">
+    <h2>👁️ View a Bracket</h2>
+    <div class="compare-controls">
+      <label>View bracket of:</label>
+      <select class="user-select" id="view-select">
+        <option value="">— Select a player —</option>
+      </select>
+      <button class="compare-btn" onclick="viewBracket()">View</button>
+    </div>
+    <div id="view-result"></div>
+  </div>
+
+</main>
+
+<script>
+const ME = localStorage.getItem('nba_username');
+const MY_ID = localStorage.getItem('nba_user_id');
+document.getElementById('user-tag').textContent = `👤 ${ME}`;
+
+let allUsers = [];
+let allBrackets = {};
+let allResults = {};
+
+const ROUND_LABELS = {
+  east: { 1: 'East R1', 2: 'East Semis', 3: 'East Finals' },
+  west: { 1: 'West R1', 2: 'West Semis', 3: 'West Finals' },
+  finals: { 4: 'NBA Finals' }
+};
+
+function getAllSeriesKeys() {
+  const keys = [];
+  ['east','west'].forEach(conf => {
+    [1,2,3].forEach(r => {
+      const count = r === 1 ? 4 : r === 2 ? 2 : 1;
+      for (let i = 0; i < count; i++) keys.push({ key: `${conf}_r${r}_s${i}`, label: `${conf === 'east' ? 'East' : 'West'} R${r} S${i+1}`, round: r });
+    });
+  });
+  keys.push({ key: 'finals_s0', label: 'NBA Finals', round: 4 });
+  return keys;
+}
+
+function calcPoints(pick, result, round) {
+  if (!pick?.winner || !result?.winner) return 0;
+  if (pick.winner !== result.winner) return 0;
+  if (pick.score === result.score) return 3;
+  return 2;
+}
+
+function calcTotalPoints(picks) {
+  let total = 0;
+  let correct = 0;
+  getAllSeriesKeys().forEach(({ key, round }) => {
+    const r = allResults[key];
+    const p = picks[key];
+    const pts = calcPoints(p, r, round);
+    total += pts;
+    if (pts > 0) correct++;
+  });
+  return { total, correct };
+}
+
+async function loadAll() {
+  const [{ data: users }, { data: brackets }, { data: results }] = await Promise.all([
+    db.from('users').select('*'),
+    db.from('brackets').select('*'),
+    db.from('results').select('*')
+  ]);
+
+  allUsers = users || [];
+  (brackets || []).forEach(b => { allBrackets[b.user_id] = b; });
+  (results || []).forEach(r => { allResults[r.series_key] = r; });
+
+  renderLeaderboard();
+  populateDropdowns();
+}
+
+function renderLeaderboard() {
+  const tbody = document.getElementById('leaderboard-body');
+
+  const rows = allUsers.map(u => {
+    const bracket = allBrackets[u.id];
+    const picks = bracket?.picks || {};
+    const { total, correct } = calcTotalPoints(picks);
+    return { username: u.username, total, correct, isMe: u.username === ME };
+  });
+
+  rows.sort((a, b) => b.total - a.total || b.correct - a.correct);
+
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#888;">No players yet.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map((r, i) => {
+    const rank = i + 1;
+    const rankClass = rank <= 3 ? ` rank-${rank}` : '';
+    const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+    return `
+      <tr class="${r.isMe ? 'me' : ''}">
+        <td><span class="rank-badge${rankClass}">${rankIcon}</span></td>
+        <td>${r.username}${r.isMe ? ' <strong>(you)</strong>' : ''}</td>
+        <td class="pts-cell">${r.total} pts</td>
+        <td>${r.correct} correct</td>
+      </tr>`;
+  }).join('');
+}
+
+function populateDropdowns() {
+  const others = allUsers.filter(u => u.username !== ME);
+  ['compare-select', 'view-select'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value="">— Select a player —</option>';
+    others.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u.id;
+      opt.textContent = u.username;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+function runCompare() {
+  const otherId = document.getElementById('compare-select').value;
+  if (!otherId) { alert('Please select a player to compare.'); return; }
+
+  const myBracket = allBrackets[MY_ID]?.picks || {};
+  const otherBracket = allBrackets[otherId]?.picks || {};
+  const otherUser = allUsers.find(u => u.id === otherId);
+
+  const series = getAllSeriesKeys();
+  let matchCount = 0;
+  let scoreMatchCount = 0;
+
+  const rows = series.map(({ key, label }) => {
+    const myPick = myBracket[key];
+    const theirPick = otherBracket[key];
+    const pickMatch = myPick?.winner && theirPick?.winner && myPick.winner === theirPick.winner;
+    const scoreMatch = pickMatch && myPick?.score && theirPick?.score && myPick.score === theirPick.score;
+    if (pickMatch) matchCount++;
+    if (scoreMatch) scoreMatchCount++;
+
+    return `
+      <tr>
+        <td>${label}</td>
+        <td>${myPick?.winner || '—'} ${myPick?.score ? `(${myPick.score})` : ''}</td>
+        <td>${theirPick?.winner || '—'} ${theirPick?.score ? `(${theirPick.score})` : ''}</td>
+        <td class="${pickMatch ? 'match' : 'mismatch'}">${pickMatch ? (scoreMatch ? '✅ Same' : '🟡 Same team') : '❌ Different'}</td>
+      </tr>`;
+  }).join('');
+
+  const pct = Math.round((matchCount / series.length) * 100);
+
+  document.getElementById('compare-result').innerHTML = `
+    <div class="similarity-badge">
+      Bracket similarity with <strong>${otherUser.username}</strong>:
+      <span>${pct}%</span> &mdash; ${matchCount}/${series.length} picks match, ${scoreMatchCount} scores match
+    </div>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Series</th>
+          <th>Your Pick</th>
+          <th>${otherUser.username}'s Pick</th>
+          <th>Match?</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function viewBracket() {
+  const otherId = document.getElementById('view-select').value;
+  if (!otherId) { alert('Please select a player.'); return; }
+
+  const bracket = allBrackets[otherId]?.picks || {};
+  const otherUser = allUsers.find(u => u.id === otherId);
+  const series = getAllSeriesKeys();
+
+  const roundGroups = {};
+  series.forEach(s => {
+    const r = s.round;
+    if (!roundGroups[r]) roundGroups[r] = [];
+    roundGroups[r].push(s);
+  });
+
+  const roundNames = { 1: 'First Round', 2: 'Conference Semifinals', 3: 'Conference Finals', 4: 'NBA Finals' };
+
+  let html = `<div class="bracket-viewer"><h3 style="color:#253B73;margin-bottom:12px;">📋 ${otherUser.username}'s Bracket</h3>`;
+
+  Object.keys(roundGroups).sort().forEach(r => {
+    html += `<div class="round-divider">${roundNames[r]}</div>`;
+    roundGroups[r].forEach(({ key, label }) => {
+      const pick = bracket[key];
+      html += `
+        <div class="series-row">
+          <span class="series-label">${label}</span>
+          <span class="series-pick">${pick?.winner || '(no pick)'}</span>
+          <span class="series-score">${pick?.score || ''}</span>
+        </div>`;
+    });
+  });
+
+  html += '</div>';
+  document.getElementById('view-result').innerHTML = html;
+}
+
+loadAll();
+</script>
+</body>
+</html>
