@@ -242,10 +242,7 @@
     const existing = allUsers.find(u => u.username === username);
 
     if (!existing) {
-      if (allUsers.length >= 10) {
-        err.textContent = 'This bracket challenge is full (max 10 players).';
-        return;
-      }
+      
       // Create new user
       const { data: newUser, error: insertErr } = await db.from('users').insert({ username }).select().single();
       if (insertErr) { err.textContent = 'Could not create account. Try again.'; return; }
