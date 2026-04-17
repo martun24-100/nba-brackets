@@ -46,7 +46,7 @@ const MATCHUPS = {
   finals: [['e_r3_w0','w_r3_w0']]
 };
 
-const DEADLINE = new Date('2026-04-18T00:00:00-04:00');
+const DEADLINE = new Date('2026-04-19T00:00:00-04:00');
 
 function isDeadlinePassed() {
   return new Date() >= DEADLINE;
