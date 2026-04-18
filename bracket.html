@@ -21,6 +21,7 @@
       position: sticky;
       top: 0;
       z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
     header h1 { color: #F8F8F6; font-size: 1.1rem; font-weight: 700; }
     .user-tag { color: rgba(248,248,246,0.75); font-size: 0.85rem; }
@@ -30,7 +31,6 @@
     .deadline-bar { background: #B52532; color: white; text-align: center; padding: 7px; font-size: 0.88rem; font-weight: 700; }
     .locked-bar { background: #333; color: white; text-align: center; padding: 9px; font-size: 0.9rem; display: none; }
 
-    /* ── SAVE BAR ── */
     .save-bar {
       background: white;
       border-bottom: 2px solid #eee;
@@ -41,308 +41,238 @@
       flex-wrap: wrap;
     }
     .save-bar button {
-      background: #B52532;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 9px 28px;
-      font-family: Arial, sans-serif;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s;
+      background: #B52532; color: white; border: none; border-radius: 6px;
+      padding: 9px 28px; font-family: Arial, sans-serif; font-size: 0.95rem;
+      font-weight: 700; cursor: pointer; transition: background 0.2s;
     }
     .save-bar button:hover { background: #9a1f2b; }
     .save-bar button:disabled { background: #aaa; cursor: not-allowed; }
     .save-status { font-size: 0.88rem; color: #253B73; }
 
-    /* ── BRACKET LAYOUT ── */
-    .bracket-scroll { overflow-x: auto; padding: 24px 16px 40px; }
+    /* ── BRACKET SCROLL AREA ── */
+    .bracket-scroll { overflow-x: auto; padding: 20px 12px 40px; }
 
     .bracket-container {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
+      min-width: 1200px;
       gap: 0;
-      min-width: 1100px;
-      position: relative;
     }
 
-    /* Each column = one round */
-    .bracket-col {
+    /* ── CONFERENCE WRAPPER ── */
+    .conf-side {
       display: flex;
-      flex-direction: column;
+      align-items: stretch;
       flex-shrink: 0;
     }
 
-    .col-header {
+    .conf-label {
+      writing-mode: vertical-rl;
+      background: #253B73;
+      color: white;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 8px 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .conf-label.east { transform: rotate(180deg); }
+
+    /* ── ROUND COLUMN ── */
+    .round-col {
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      width: 158px;
+    }
+
+    .round-header {
       background: #253B73;
       color: white;
       text-align: center;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 6px 0;
-      margin-bottom: 0;
+      letter-spacing: 0.4px;
+      padding: 5px 4px;
+      white-space: nowrap;
+      overflow: hidden;
     }
 
-    .col-inner {
+    .round-inner {
       display: flex;
       flex-direction: column;
       justify-content: space-around;
       flex: 1;
-      padding: 8px 0;
+      padding: 6px 0;
+      gap: 0;
     }
 
-    /* ── MATCHUP CARD ── */
+    /* ── CONNECTOR ── */
+    .connector { width: 16px; flex-shrink: 0; }
+
+    /* ── MATCHUP ── */
     .matchup {
-      display: flex;
-      flex-direction: column;
-      width: 160px;
+      width: 158px;
       margin: 6px 0;
-      position: relative;
+      flex-shrink: 0;
     }
 
     .team-slot {
       background: white;
-      border: 2px solid #ddd;
-      border-radius: 0;
-      padding: 0;
+      border: 2px solid #ccc;
       display: flex;
       align-items: center;
-      height: 38px;
+      height: 36px;
       overflow: hidden;
       cursor: pointer;
       transition: border-color 0.15s, background 0.15s;
-      position: relative;
     }
+    .team-slot:first-of-type { border-radius: 5px 5px 0 0; border-bottom: 1px solid #eee; }
+    .team-slot:last-of-type  { border-radius: 0 0 5px 5px; border-top: 1px solid #eee; }
 
-    .team-slot:first-child { border-radius: 6px 6px 0 0; border-bottom: 1px solid #eee; }
-    .team-slot:last-child  { border-radius: 0 0 6px 6px; border-top: 1px solid #eee; }
-
-    .team-slot:hover:not(.locked) { border-color: #253B73; background: #f0f4ff; }
+    .team-slot:hover:not(.no-click) { border-color: #253B73; background: #eef2ff; }
     .team-slot.selected { background: #253B73; border-color: #253B73; }
-    .team-slot.selected .team-name-text { color: white; }
-    .team-slot.selected .seed-badge { background: rgba(255,255,255,0.2); color: white; }
+    .team-slot.selected .team-txt { color: white; }
+    .team-slot.selected .seed-num { background: rgba(255,255,255,0.18); color: white; }
 
-    .team-slot.correct-pick { background: #d4f0d4; border-color: #4caf50; }
-    .team-slot.wrong-pick   { background: #fde8e8; border-color: #e57373; }
-    .team-slot.correct-pick.selected { background: #2e7d32; border-color: #2e7d32; }
-    .team-slot.wrong-pick.selected   { background: #c62828; border-color: #c62828; }
+    .team-slot.correct-result { background: #e8f5e9; border-color: #66bb6a; }
+    .team-slot.wrong-result   { background: #ffebee; border-color: #ef9a9a; }
+    .team-slot.selected.correct-result { background: #2e7d32; border-color: #2e7d32; }
+    .team-slot.selected.wrong-result   { background: #c62828; border-color: #c62828; }
+    .team-slot.no-click { cursor: default; }
 
-    .seed-badge {
+    .seed-num {
       background: #253B73;
       color: white;
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-weight: 700;
-      width: 22px;
-      min-width: 22px;
+      width: 20px;
+      min-width: 20px;
       height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
-    .team-slot.selected .seed-badge { background: rgba(255,255,255,0.15); }
-
-    .team-name-text {
-      font-size: 0.72rem;
+    .team-txt {
+      font-size: 0.7rem;
       font-weight: 600;
-      color: #222;
-      padding: 0 6px;
-      line-height: 1.2;
+      color: #1a1a1a;
+      padding: 0 5px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       flex: 1;
     }
+    .team-txt.tbd { color: #bbb; font-style: italic; font-weight: 400; }
 
-    .tbd-text { color: #aaa; font-style: italic; font-weight: 400; }
-
-    /* Score selector below matchup */
-    .score-row {
+    .score-line {
+      font-size: 0.65rem;
+      color: #888;
+      padding: 2px 4px;
       display: flex;
       align-items: center;
       gap: 4px;
-      margin-top: 4px;
-      padding: 0 2px;
     }
-    .score-row label { font-size: 0.68rem; color: #888; white-space: nowrap; }
-    .score-row select {
-      flex: 1;
-      font-size: 0.72rem;
-      padding: 3px 4px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-family: Arial, sans-serif;
-      background: white;
-    }
-    .score-row select:disabled { background: #f5f5f5; }
+    .score-val { font-weight: 700; color: #253B73; }
 
-    /* Result badge */
-    .result-tag {
-      font-size: 0.65rem;
+    .pts-tag {
+      font-size: 0.62rem;
       font-weight: 700;
-      padding: 2px 6px;
+      padding: 1px 5px;
       border-radius: 3px;
-      margin-top: 3px;
+      margin-top: 1px;
       display: none;
     }
-    .result-tag.show { display: block; }
-    .result-tag.pts3 { background: #c8e6c9; color: #1b5e20; }
-    .result-tag.pts2 { background: #fff9c4; color: #795500; }
-    .result-tag.pts0 { background: #ffcdd2; color: #b71c1c; }
-
-    /* ── CONNECTOR LINES ── */
-    .connector {
-      width: 20px;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-    }
+    .pts-tag.show { display: inline-block; }
+    .pts-tag.p3 { background: #c8e6c9; color: #1b5e20; }
+    .pts-tag.p2 { background: #fff9c4; color: #795500; }
+    .pts-tag.p0 { background: #ffcdd2; color: #b71c1c; }
 
     /* ── FINALS CENTER ── */
-    .finals-col {
+    .finals-center {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 180px;
       flex-shrink: 0;
-      padding: 0 8px;
+      width: 190px;
+      padding: 0 6px;
+      gap: 10px;
     }
 
-    .finals-label {
+    .finals-banner {
       background: #B52532;
       color: white;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      padding: 6px 16px;
+      padding: 5px 14px;
       border-radius: 4px;
-      margin-bottom: 8px;
       text-align: center;
     }
 
-    .finals-matchup {
-      width: 180px;
-    }
+    .finals-matchup { width: 190px; }
+    .finals-matchup .team-slot { height: 42px; }
+    .finals-matchup .team-txt { font-size: 0.75rem; }
+    .finals-matchup .seed-num { width: 24px; min-width: 24px; font-size: 0.65rem; }
 
-    .finals-matchup .team-slot {
-      height: 44px;
-    }
-
-    .finals-matchup .team-name-text { font-size: 0.78rem; }
-    .finals-matchup .seed-badge { width: 26px; min-width: 26px; }
-
-    /* ── CHAMPION ── */
-    .champion-box {
-      margin-top: 12px;
-      text-align: center;
-    }
-    .champion-label { font-size: 0.7rem; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-    .champion-name {
-      background: linear-gradient(135deg, #c8a020, #e8c840);
-      color: #1a1a00;
-      font-size: 0.8rem;
+    .champ-box { text-align: center; }
+    .champ-label { font-size: 0.65rem; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .champ-name {
+      background: linear-gradient(135deg, #c8a020, #f0d060);
+      color: #1a1200;
+      font-size: 0.78rem;
       font-weight: 700;
-      padding: 8px 14px;
+      padding: 8px 12px;
       border-radius: 6px;
-      min-width: 160px;
-      min-height: 32px;
+      min-width: 170px;
+      min-height: 34px;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
     }
 
-    /* ── CONFERENCE LABELS ── */
-    .conf-section {
-      display: flex;
-      align-items: stretch;
-    }
-
-    .conf-label-east {
-      writing-mode: vertical-rl;
-      transform: rotate(180deg);
-      background: #253B73;
-      color: white;
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      padding: 8px 5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .conf-label-west {
-      writing-mode: vertical-rl;
-      background: #253B73;
-      color: white;
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      padding: 8px 5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    /* ── SCORE MODAL ── */
-    .score-modal {
+    /* ── MODAL ── */
+    .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 200;
+      background: rgba(0,0,0,0.55);
+      z-index: 300;
       align-items: center;
       justify-content: center;
     }
-    .score-modal.open { display: flex; }
+    .modal-overlay.open { display: flex; }
     .modal-box {
       background: white;
       border-radius: 12px;
-      padding: 28px;
-      min-width: 300px;
+      padding: 28px 24px;
+      width: 320px;
       box-shadow: 0 8px 40px rgba(0,0,0,0.3);
       text-align: center;
     }
-    .modal-box h3 { color: #253B73; margin-bottom: 6px; font-size: 1rem; }
-    .modal-box p { color: #666; font-size: 0.85rem; margin-bottom: 16px; }
+    .modal-box h3 { color: #253B73; font-size: 1rem; margin-bottom: 4px; }
+    .modal-box p  { color: #666; font-size: 0.84rem; margin-bottom: 14px; }
     .modal-box select {
-      width: 100%;
-      padding: 10px;
-      border: 2px solid #253B73;
-      border-radius: 6px;
-      font-family: Arial, sans-serif;
-      font-size: 0.95rem;
-      margin-bottom: 16px;
+      width: 100%; padding: 10px; border: 2px solid #253B73;
+      border-radius: 6px; font-family: Arial, sans-serif; font-size: 0.95rem; margin-bottom: 16px;
     }
     .modal-btns { display: flex; gap: 10px; }
     .modal-btns button {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      font-family: Arial, sans-serif;
-      font-size: 0.9rem;
-      font-weight: 700;
-      cursor: pointer;
+      flex: 1; padding: 10px; border: none; border-radius: 6px;
+      font-family: Arial, sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer;
     }
-    .btn-confirm { background: #253B73; color: white; }
-    .btn-cancel  { background: #eee; color: #333; }
-
-    /* mobile */
-    @media (max-width: 800px) {
-      .bracket-scroll { padding: 16px 8px 32px; }
-    }
+    .btn-ok  { background: #253B73; color: white; }
+    .btn-cancel { background: #eee; color: #333; }
   </style>
 </head>
 <body>
@@ -374,13 +304,13 @@
   <div class="bracket-container" id="bracket-root"></div>
 </div>
 
-<!-- Score picker modal -->
-<div class="score-modal" id="score-modal">
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
   <div class="modal-box">
-    <h3 id="modal-title">Pick series score</h3>
+    <h3 id="modal-title">Pick winner</h3>
     <p id="modal-sub"></p>
     <select id="modal-score">
-      <option value="">— Choose score —</option>
+      <option value="">— Choose series score —</option>
       <option value="4-0">4-0</option>
       <option value="4-1">4-1</option>
       <option value="4-2">4-2</option>
@@ -388,280 +318,263 @@
     </select>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-confirm" onclick="confirmPick()">Confirm</button>
+      <button class="btn-ok" onclick="confirmPick()">Confirm Pick</button>
     </div>
   </div>
 </div>
 
 <script>
 // ── STATE ──
-let USER_ID   = localStorage.getItem('nba_user_id');
-let USERNAME  = localStorage.getItem('nba_username');
-let picks     = {};
-let results   = {};
-let seeds     = null;
-let isLocked  = false;
-
-// pending modal state
-let pendingSK = null, pendingWinner = null, pendingSeed = null;
+let USER_ID  = localStorage.getItem('nba_user_id');
+let USERNAME = localStorage.getItem('nba_username');
+let picks    = {};
+let results  = {};
+let seeds    = null;
+let isLocked = false;
+let pendingSK = null, pendingWinner = null;
 
 if (!USER_ID) window.location.href = 'index.html';
 document.getElementById('user-tag').textContent = `👤 ${USERNAME}`;
 document.getElementById('deadline-display').textContent = formatDeadline();
 
-// ── SERIES DEFINITIONS ──
-// Each series: key, conf, round, seedA index, seedB index (or 'winner of...')
-const EAST_R1 = [
-  { key:'east_r1_s0', a:0, b:7 },
-  { key:'east_r1_s1', a:1, b:6 },
-  { key:'east_r1_s2', a:2, b:5 },
-  { key:'east_r1_s3', a:3, b:4 },
-];
-const EAST_R2 = [
-  { key:'east_r2_s0', srcA:'east_r1_s0', srcB:'east_r1_s1' },
-  { key:'east_r2_s1', srcA:'east_r1_s2', srcB:'east_r1_s3' },
-];
-const EAST_R3 = [
-  { key:'east_r3_s0', srcA:'east_r2_s0', srcB:'east_r2_s1' },
-];
-const WEST_R1 = [
-  { key:'west_r1_s0', a:0, b:7 },
-  { key:'west_r1_s1', a:1, b:6 },
-  { key:'west_r1_s2', a:2, b:5 },
-  { key:'west_r1_s3', a:3, b:4 },
-];
-const WEST_R2 = [
-  { key:'west_r2_s0', srcA:'west_r1_s0', srcB:'west_r1_s1' },
-  { key:'west_r2_s1', srcA:'west_r1_s2', srcB:'west_r1_s3' },
-];
-const WEST_R3 = [
-  { key:'west_r3_s0', srcA:'west_r2_s0', srcB:'west_r2_s1' },
-];
-const FINALS = { key:'finals_s0', srcA:'east_r3_s0', srcB:'west_r3_s0' };
+/*
+  CORRECT NBA BRACKET STRUCTURE
+  ================================
+  R1:  1v8, 4v5, 3v6, 2v7      (top half: 1v8 and 4v5 — bottom half: 3v6 and 2v7)
+  R2:  W(1v8) vs W(4v5),  W(3v6) vs W(2v7)
+  R3:  W(top semi) vs W(bottom semi)   ← 1 and 2 seeds can only meet here
 
-// ── GET WINNER OF A SERIES ──
-function getWinner(sk) {
-  return picks[sk]?.winner || null;
+  Keys used:
+    east_r1_s0 = 1v8     east_r1_s1 = 4v5     east_r1_s2 = 3v6     east_r1_s3 = 2v7
+    east_r2_s0 = W(s0) v W(s1)    east_r2_s1 = W(s2) v W(s3)
+    east_r3_s0 = W(r2s0) v W(r2s1)
+  Same pattern for west.
+  finals_s0 = east champ v west champ
+*/
+
+const SERIES = {
+  east: {
+    r1: [
+      { key:'east_r1_s0', seedA:0, seedB:7 },   // 1 vs 8
+      { key:'east_r1_s1', seedA:3, seedB:4 },   // 4 vs 5
+      { key:'east_r1_s2', seedA:2, seedB:5 },   // 3 vs 6
+      { key:'east_r1_s3', seedA:1, seedB:6 },   // 2 vs 7
+    ],
+    r2: [
+      { key:'east_r2_s0', srcA:'east_r1_s0', srcB:'east_r1_s1' }, // W(1v8) vs W(4v5)
+      { key:'east_r2_s1', srcA:'east_r1_s2', srcB:'east_r1_s3' }, // W(3v6) vs W(2v7)
+    ],
+    r3: [
+      { key:'east_r3_s0', srcA:'east_r2_s0', srcB:'east_r2_s1' },
+    ],
+  },
+  west: {
+    r1: [
+      { key:'west_r1_s0', seedA:0, seedB:7 },   // 1 vs 8
+      { key:'west_r1_s1', seedA:3, seedB:4 },   // 4 vs 5
+      { key:'west_r1_s2', seedA:2, seedB:5 },   // 3 vs 6
+      { key:'west_r1_s3', seedA:1, seedB:6 },   // 2 vs 7
+    ],
+    r2: [
+      { key:'west_r2_s0', srcA:'west_r1_s0', srcB:'west_r1_s1' },
+      { key:'west_r2_s1', srcA:'west_r1_s2', srcB:'west_r1_s3' },
+    ],
+    r3: [
+      { key:'west_r3_s0', srcA:'west_r2_s0', srcB:'west_r2_s1' },
+    ],
+  },
+  finals: { key:'finals_s0', srcA:'east_r3_s0', srcB:'west_r3_s0' },
+};
+
+// ── HELPERS ──
+function getWinner(sk) { return picks[sk]?.winner || null; }
+
+function seedTeam(conf, idx) {
+  return seeds?.[conf]?.[idx]?.team || 'TBD';
 }
 
-// ── GET TEAM NAME ──
-function teamName(conf, seedIdx) {
-  return seeds[conf][seedIdx]?.team || 'TBD';
+function teamA(conf, s) {
+  return s.seedA !== undefined ? seedTeam(conf, s.seedA) : (getWinner(s.srcA) || 'TBD');
+}
+function teamB(conf, s) {
+  return s.seedB !== undefined ? seedTeam(conf, s.seedB) : (getWinner(s.srcB) || 'TBD');
+}
+function seedA(s) { return s.seedA !== undefined ? s.seedA + 1 : null; }
+function seedB(s) { return s.seedB !== undefined ? s.seedB + 1 : null; }
+
+function calcPoints(pick, result) {
+  if (!pick?.winner || !result?.winner) return 0;
+  if (pick.winner !== result.winner) return 0;
+  return pick.score === result.score ? 3 : 2;
 }
 
-// ── BUILD THE FULL BRACKET ──
+// ── BUILD BRACKET ──
 function buildBracket() {
   const root = document.getElementById('bracket-root');
   root.innerHTML = '';
 
-  // East side: R1 → R2 → ECF
-  const eastSide = buildConferenceSide('east', EAST_R1, EAST_R2, EAST_R3);
-
-  // West side: WCF → R2 → R1 (mirrored)
-  const westSide = buildConferenceSide('west', WEST_R1, WEST_R2, WEST_R3, true);
+  // East side (left): R1 → R2 → R3
+  root.appendChild(buildSide('east', false));
 
   // Finals center
-  const finalsCol = buildFinalsCol();
+  root.appendChild(buildFinalsCenter());
 
-  root.appendChild(eastSide);
-  root.appendChild(finalsCol);
-  root.appendChild(westSide);
+  // West side (right): R3 → R2 → R1 (mirrored)
+  root.appendChild(buildSide('west', true));
 }
 
-function buildConferenceSide(conf, r1List, r2List, r3List, mirror = false) {
-  const SLOT_H  = 38 * 2 + 4 + 12 + 4 + 20 + 8; // approx height per matchup slot
+function buildSide(conf, mirror) {
   const wrapper = document.createElement('div');
-  wrapper.style.display = 'flex';
-  wrapper.style.alignItems = 'stretch';
+  wrapper.className = 'conf-side';
 
-  const confLabel = document.createElement('div');
-  confLabel.className = mirror ? 'conf-label-west' : 'conf-label-east';
-  confLabel.textContent = conf === 'east' ? 'Eastern Conference' : 'Western Conference';
+  const label = document.createElement('div');
+  label.className = 'conf-label ' + (conf === 'east' ? 'east' : 'west');
+  label.textContent = conf === 'east' ? 'Eastern Conference' : 'Western Conference';
 
-  // Build columns
-  const r1Col = buildRoundCol(conf, r1List, 'east', 1, 'First Round', 4);
-  const r2Col = buildRoundCol(conf, r2List, 'east', 2, 'Semifinals', 2);
-  const r3Col = buildRoundCol(conf, r3List, 'east', 3, conf === 'east' ? 'East Finals' : 'West Finals', 1);
+  const r1 = buildRoundCol(conf, SERIES[conf].r1, 'First Round');
+  const r2 = buildRoundCol(conf, SERIES[conf].r2, 'Semifinals');
+  const r3 = buildRoundCol(conf, SERIES[conf].r3, conf === 'east' ? 'East Finals' : 'West Finals');
 
-  const cols = mirror
-    ? [r3Col, r2Col, r1Col, confLabel]
-    : [confLabel, r1Col, r2Col, r3Col];
+  const c1 = makeConnector();
+  const c2 = makeConnector();
+  const c3 = makeConnector();
 
-  cols.forEach(c => wrapper.appendChild(c));
+  if (mirror) {
+    // West: label on right, rounds go R3 → R2 → R1 left to right
+    wrapper.appendChild(c3); wrapper.appendChild(r3);
+    wrapper.appendChild(c2); wrapper.appendChild(r2);
+    wrapper.appendChild(c1); wrapper.appendChild(r1);
+    wrapper.appendChild(label);
+  } else {
+    // East: label on left, rounds go R1 → R2 → R3
+    wrapper.appendChild(label);
+    wrapper.appendChild(r1); wrapper.appendChild(c1);
+    wrapper.appendChild(r2); wrapper.appendChild(c2);
+    wrapper.appendChild(r3); wrapper.appendChild(c3);
+  }
+
   return wrapper;
 }
 
-function buildRoundCol(conf, seriesList, _unused, round, label, count) {
-  const col = document.createElement('div');
-  col.style.display = 'flex';
-  col.style.flexDirection = 'column';
-  col.style.flexShrink = '0';
+function makeConnector() {
+  const d = document.createElement('div');
+  d.className = 'connector';
+  return d;
+}
 
-  // Header
+function buildRoundCol(conf, seriesList, label) {
+  const col = document.createElement('div');
+  col.className = 'round-col';
+
   const hdr = document.createElement('div');
-  hdr.className = 'col-header';
-  hdr.style.width = '160px';
+  hdr.className = 'round-header';
   hdr.textContent = label;
   col.appendChild(hdr);
 
-  // Inner
   const inner = document.createElement('div');
-  inner.style.display = 'flex';
-  inner.style.flexDirection = 'column';
-  inner.style.justifyContent = 'space-around';
-  inner.style.flex = '1';
-  inner.style.padding = '8px 0';
-  inner.style.width = '160px';
+  inner.className = 'round-inner';
 
   seriesList.forEach(s => {
-    const teamA = getTeamForSlot(conf, s, 'a');
-    const teamB = getTeamForSlot(conf, s, 'b');
-    const seedA = getSeedForSlot(conf, s, 'a');
-    const seedB = getSeedForSlot(conf, s, 'b');
-    inner.appendChild(buildMatchup(s.key, teamA, teamB, seedA, seedB, round));
+    inner.appendChild(buildMatchup(conf, s));
   });
 
   col.appendChild(inner);
-
-  // Connector spacer between cols
-  const connWrap = document.createElement('div');
-  connWrap.style.display = 'flex';
-  connWrap.style.alignItems = 'center';
-  connWrap.appendChild(col);
-
-  const conn = document.createElement('div');
-  conn.style.width = '18px';
-  conn.style.flexShrink = '0';
-  connWrap.appendChild(conn);
-
-  return connWrap;
+  return col;
 }
 
-function getTeamForSlot(conf, s, slot) {
-  if (s.a !== undefined && slot === 'a') return teamName(conf, s.a);
-  if (s.b !== undefined && slot === 'b') return teamName(conf, s.b);
-  const src = slot === 'a' ? s.srcA : s.srcB;
-  return getWinner(src) || 'TBD';
-}
-
-function getSeedForSlot(conf, s, slot) {
-  if (s.a !== undefined && slot === 'a') return s.a + 1;
-  if (s.b !== undefined && slot === 'b') return s.b + 1;
-  return null;
-}
-
-function buildMatchup(sk, teamA, teamB, seedA, seedB, round) {
+function buildMatchup(conf, s) {
   const wrap = document.createElement('div');
   wrap.className = 'matchup';
-  wrap.style.margin = '8px 0';
 
-  const pick   = picks[sk] || {};
-  const result = results[sk];
+  const ta = teamA(conf, s);
+  const tb = teamB(conf, s);
+  const sa = seedA(s);
+  const sb = seedB(s);
+  const pick   = picks[s.key] || {};
+  const result = results[s.key];
 
-  // Top team slot
-  wrap.appendChild(buildTeamSlot(sk, teamA, seedA, pick, result, 'a'));
-  // Bottom team slot
-  wrap.appendChild(buildTeamSlot(sk, teamB, seedB, pick, result, 'b'));
+  wrap.appendChild(makeSlot(s.key, ta, sa, pick, result));
+  wrap.appendChild(makeSlot(s.key, tb, sb, pick, result));
 
-  // Score row
-  const scoreRow = document.createElement('div');
-  scoreRow.className = 'score-row';
-  const scoreLbl = document.createElement('label');
-  scoreLbl.textContent = 'Score:';
-  const scoreVal = document.createElement('span');
-  scoreVal.style.fontSize = '0.72rem';
-  scoreVal.style.fontWeight = '700';
-  scoreVal.style.color = '#253B73';
-  scoreVal.style.marginLeft = '4px';
-  scoreVal.textContent = pick.score || '—';
-  scoreVal.id = `score-display-${sk}`;
-  scoreRow.appendChild(scoreLbl);
-  scoreRow.appendChild(scoreVal);
-  wrap.appendChild(scoreRow);
+  // Score line
+  const sl = document.createElement('div');
+  sl.className = 'score-line';
+  sl.innerHTML = `Score: <span class="score-val" id="sv-${s.key}">${pick.score || '—'}</span>`;
+  wrap.appendChild(sl);
 
-  // Result badge
+  // Points badge
   if (result?.winner) {
     const pts = calcPoints(pick, result);
     const tag = document.createElement('div');
-    tag.className = 'result-tag show ' + (pts === 3 ? 'pts3' : pts === 2 ? 'pts2' : 'pts0');
-    tag.textContent = pts === 3 ? `✅ +3 pts` : pts === 2 ? `🟡 +2 pts` : `❌ 0 pts`;
+    tag.className = 'pts-tag show ' + (pts === 3 ? 'p3' : pts === 2 ? 'p2' : 'p0');
+    tag.textContent = pts === 3 ? '✅ +3 pts' : pts === 2 ? '🟡 +2 pts' : '❌ 0 pts';
     wrap.appendChild(tag);
   }
 
   return wrap;
 }
 
-function buildTeamSlot(sk, teamName_, seed, pick, result, slot) {
-  const isTBD = !teamName_ || teamName_ === 'TBD' || teamName_.startsWith('TBD');
-  const isSelected = pick.winner === teamName_ && !isTBD;
+function makeSlot(sk, name, seed, pick, result) {
+  const isTBD     = !name || name === 'TBD' || name.startsWith('TBD');
+  const isSelected = !isTBD && pick.winner === name;
 
-  // color coding
-  let extraClass = '';
-  if (result?.winner) {
-    if (isSelected) {
-      extraClass = result.winner === teamName_ ? ' correct-pick' : ' wrong-pick';
-    }
+  let resultClass = '';
+  if (result?.winner && isSelected) {
+    resultClass = result.winner === name ? ' correct-result' : ' wrong-result';
   }
 
-  const slotEl = document.createElement('div');
-  slotEl.className = 'team-slot' + (isSelected ? ' selected' : '') + extraClass + (isLocked ? ' locked' : '');
+  const slot = document.createElement('div');
+  slot.className = 'team-slot' + (isSelected ? ' selected' : '') + resultClass + (isTBD || isLocked ? ' no-click' : '');
 
-  // Seed badge
   const badge = document.createElement('div');
-  badge.className = 'seed-badge';
+  badge.className = 'seed-num';
   badge.textContent = seed || '?';
-  slotEl.appendChild(badge);
 
-  // Name
-  const name = document.createElement('div');
-  name.className = 'team-name-text' + (isTBD ? ' tbd-text' : '');
-  name.textContent = teamName_ || 'TBD';
-  slotEl.appendChild(name);
+  const txt = document.createElement('div');
+  txt.className = 'team-txt' + (isTBD ? ' tbd' : '');
+  txt.textContent = name || 'TBD';
 
-  if (!isLocked && !isTBD) {
-    slotEl.style.cursor = 'pointer';
-    slotEl.addEventListener('click', () => openModal(sk, teamName_, seed));
+  slot.appendChild(badge);
+  slot.appendChild(txt);
+
+  if (!isTBD && !isLocked) {
+    slot.addEventListener('click', () => openModal(sk, name));
   }
 
-  return slotEl;
+  return slot;
 }
 
-function buildFinalsCol() {
+function buildFinalsCenter() {
   const col = document.createElement('div');
-  col.className = 'finals-col';
+  col.className = 'finals-center';
 
-  const lbl = document.createElement('div');
-  lbl.className = 'finals-label';
-  lbl.textContent = '🏆 NBA Finals';
-  col.appendChild(lbl);
+  const banner = document.createElement('div');
+  banner.className = 'finals-banner';
+  banner.textContent = '🏆 NBA Finals';
+  col.appendChild(banner);
 
-  const s = FINALS;
-  const teamA = getWinner(s.srcA) || 'East Champion';
-  const teamB = getWinner(s.srcB) || 'West Champion';
-  const pick   = picks[s.key] || {};
+  const s    = SERIES.finals;
+  const ta   = getWinner(s.srcA) || 'East Champion';
+  const tb   = getWinner(s.srcB) || 'West Champion';
+  const pick = picks[s.key] || {};
   const result = results[s.key];
 
   const mWrap = document.createElement('div');
   mWrap.className = 'finals-matchup';
-  mWrap.appendChild(buildTeamSlot(s.key, teamA, 'E', pick, result, 'a'));
-  mWrap.appendChild(buildTeamSlot(s.key, teamB, 'W', pick, result, 'b'));
+  mWrap.appendChild(makeSlot(s.key, ta, 'E', pick, result));
+  mWrap.appendChild(makeSlot(s.key, tb, 'W', pick, result));
 
-  const scoreRow = document.createElement('div');
-  scoreRow.className = 'score-row';
-  scoreRow.style.marginTop = '5px';
-  const sl = document.createElement('label'); sl.textContent = 'Score:';
-  const sv = document.createElement('span');
-  sv.style.cssText = 'font-size:0.72rem;font-weight:700;color:#253B73;margin-left:4px;';
-  sv.id = `score-display-${s.key}`;
-  sv.textContent = pick.score || '—';
-  scoreRow.appendChild(sl); scoreRow.appendChild(sv);
-  mWrap.appendChild(scoreRow);
+  const sl = document.createElement('div');
+  sl.className = 'score-line';
+  sl.style.justifyContent = 'center';
+  sl.innerHTML = `Score: <span class="score-val" id="sv-${s.key}">${pick.score || '—'}</span>`;
+  mWrap.appendChild(sl);
 
   if (result?.winner) {
     const pts = calcPoints(pick, result);
     const tag = document.createElement('div');
-    tag.className = 'result-tag show ' + (pts === 3 ? 'pts3' : pts === 2 ? 'pts2' : 'pts0');
-    tag.textContent = pts === 3 ? `✅ +3 pts` : pts === 2 ? `🟡 +2 pts` : `❌ 0 pts`;
+    tag.className = 'pts-tag show ' + (pts === 3 ? 'p3' : pts === 2 ? 'p2' : 'p0');
+    tag.textContent = pts === 3 ? '✅ +3 pts' : pts === 2 ? '🟡 +2 pts' : '❌ 0 pts';
     mWrap.appendChild(tag);
   }
 
@@ -669,9 +582,9 @@ function buildFinalsCol() {
 
   // Champion
   const champ = document.createElement('div');
-  champ.className = 'champion-box';
-  const cl = document.createElement('div'); cl.className = 'champion-label'; cl.textContent = '🏆 Champion';
-  const cn = document.createElement('div'); cn.className = 'champion-name';
+  champ.className = 'champ-box';
+  const cl = document.createElement('div'); cl.className = 'champ-label'; cl.textContent = '🏆 Champion';
+  const cn = document.createElement('div'); cn.className = 'champ-name';
   cn.textContent = getWinner(s.key) || '?';
   champ.appendChild(cl); champ.appendChild(cn);
   col.appendChild(champ);
@@ -680,40 +593,29 @@ function buildFinalsCol() {
 }
 
 // ── MODAL ──
-function openModal(sk, winner, seed) {
+function openModal(sk, winner) {
   if (isLocked) return;
   pendingSK     = sk;
   pendingWinner = winner;
-  pendingSeed   = seed;
-
-  document.getElementById('modal-title').textContent = `Pick winner`;
-  document.getElementById('modal-sub').textContent   = `You selected: ${winner}. Choose the series score:`;
+  document.getElementById('modal-title').textContent = `Selected: ${winner}`;
+  document.getElementById('modal-sub').textContent   = 'Choose the series score:';
   document.getElementById('modal-score').value       = picks[sk]?.score || '';
-  document.getElementById('score-modal').classList.add('open');
+  document.getElementById('modal').classList.add('open');
 }
 
 function closeModal() {
-  document.getElementById('score-modal').classList.remove('open');
-  pendingSK = pendingWinner = pendingSeed = null;
+  document.getElementById('modal').classList.remove('open');
+  pendingSK = pendingWinner = null;
 }
 
 function confirmPick() {
   if (!pendingSK) return;
   const score = document.getElementById('modal-score').value;
-
   if (!picks[pendingSK]) picks[pendingSK] = {};
   picks[pendingSK].winner = pendingWinner;
   picks[pendingSK].score  = score;
-
   closeModal();
   buildBracket();
-}
-
-// ── POINTS CALC ──
-function calcPoints(pick, result) {
-  if (!pick?.winner || !result?.winner) return 0;
-  if (pick.winner !== result.winner) return 0;
-  return pick.score === result.score ? 3 : 2;
 }
 
 // ── SAVE ──
@@ -734,18 +636,13 @@ async function saveBracket() {
   }
 
   btn.disabled = false;
-  if (err) {
-    status.textContent = '❌ Error. Try again.';
-  } else {
-    status.textContent = '✅ Saved!';
-    setTimeout(() => { status.textContent = ''; }, 3000);
-  }
+  status.textContent = err ? '❌ Error saving. Try again.' : '✅ Saved!';
+  if (!err) setTimeout(() => { status.textContent = ''; }, 3000);
 }
 
 // ── LOAD ──
 async function loadData() {
   isLocked = isDeadlinePassed();
-
   seeds = await loadSeedsFromDB();
 
   const [{ data: bracket }, { data: res }] = await Promise.all([
@@ -757,7 +654,6 @@ async function loadData() {
     picks = bracket.picks || {};
     if (bracket.locked) isLocked = true;
   }
-
   if (res) res.forEach(r => { results[r.series_key] = r; });
 
   if (isLocked) {
